@@ -1,7 +1,7 @@
 # GenAI Product Recommendation Engine
 
 ## Overview
-This project implements a Retrieval-Augmented Generation (RAG) engine for product recommendation using Model Context Protocol (MCP). It leverages LangGraph for agent orchestration and integrates various modules for perception, decision-making, memory, and action.
+This project implements a Retrieval-Augmented Generation (RAG) engine for product recommendation using Model Context Protocol (MCP) and Agentic AI(Langgraph). It leverages LangGraph for agent orchestration and integrates various modules for perception, decision-making, memory, and action.
 
 ## Tech Stack
 - **Python**
