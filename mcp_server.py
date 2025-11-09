@@ -11,7 +11,6 @@ import json
 import faiss
 import numpy as np
 from pathlib import Path
-import requests
 from markitdown import MarkItDown
 import time
 import logging
@@ -22,27 +21,33 @@ import hashlib
 from pathlib import Path
 import re
 import asyncio
+from dotenv import load_dotenv
+from google import genai
+
+load_dotenv()
 
 mcp = FastMCP("Agent")
 
-## OLLAMA Embedding Model
-EMBED_URL = "http://localhost:11434/api/embeddings"
-EMBED_MODEL = "nomic-embed-text"
+# Initialize Gemini client for embeddings
+gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+# Gemini Embedding Model
+EMBED_MODEL = "text-embedding-004"  # Google's text embedding model
 ROOT = Path(__file__).parent.resolve()
 
 def get_embeddings(text: str)-> np.ndarray:
     """
-    Get the embeddings for a text using the  Embedding Model
+    Get the embeddings for a text using the Gemini Embedding Model
     """
-    response = requests.post(
-        url=EMBED_URL,
-        json={
-            "model": EMBED_MODEL,
-            "prompt": text
-        }
-    )
-    response.raise_for_status()
-    return np.array(response.json()["embedding"], dtype=np.float32)
+    try:
+        response = gemini_client.models.embed_content(
+            model=EMBED_MODEL,
+            content=text
+        )
+        return np.array(response.embeddings[0].values, dtype=np.float32)
+    except Exception as e:
+        mcp_log("ERROR", f"Failed to get embeddings: {e}")
+        raise
     
 def mcp_log(level: str, message: str) -> None:
     """

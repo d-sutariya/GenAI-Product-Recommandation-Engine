@@ -1,9 +1,18 @@
 import faiss
 import numpy as np
-import requests
 from typing import List, Optional, Literal
 from pydantic import BaseModel
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+from google import genai
+
+load_dotenv()
+
+# Initialize Gemini client for embeddings
+gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+EMBED_MODEL = "text-embedding-004"  # Google's text embedding model
 
 
 class MemoryRecord(BaseModel):
@@ -15,32 +24,25 @@ class MemoryRecord(BaseModel):
     tags: List[str] = []
     session_id: Optional[str] = None
 
-EMBED_URL = "http://localhost:11434/api/embeddings"
-EMBED_MODEL = "nomic-embed-text"
-
-
 class MemoryManager:
     """
     A memory management utility that stores and retrieves text-based memory records 
     using vector embeddings and FAISS for similarity search.
 
     Attributes:
-        embedding_model_url (str): URL of the embedding model inference endpoint.
         model_name (str): Name of the embedding model to be used.
         index (faiss.Index): FAISS index for similarity search.
         data (List[MemoryRecord]): List of stored memory records.
         embeddings (List[np.ndarray]): List of corresponding vector embeddings.
     """
 
-    def __init__(self, embedding_model_url=EMBED_URL, model_name=EMBED_MODEL):
+    def __init__(self, model_name=EMBED_MODEL):
         """
         Initializes the MemoryManager with the given embedding model settings.
         
         Args:
-            embedding_model_url (str): The URL to the embedding model API.
             model_name (str): The name of the embedding model to use.
         """
-        self.embedding_model_url = embedding_model_url
         self.model_name = model_name
         self.index = None
         self.data: List[MemoryRecord] = []
@@ -48,7 +50,7 @@ class MemoryManager:
 
     def _get_embedding(self, text: str) -> np.ndarray:
         """
-        Gets the embedding vector for the given text from the remote model.
+        Gets the embedding vector for the given text using Gemini.
 
         Args:
             text (str): The input text to embed.
@@ -56,12 +58,15 @@ class MemoryManager:
         Returns:
             np.ndarray: The embedding vector as a NumPy array.
         """
-        response = requests.post(
-            self.embedding_model_url,
-            json={"model": self.model_name, "prompt": text},
-        )
-        response.raise_for_status()
-        return np.array(response.json()["embedding"], dtype=np.float32)
+        try:
+            response = gemini_client.models.embed_content(
+                model=self.model_name,
+                content=text
+            )
+            return np.array(response.embeddings[0].values, dtype=np.float32)
+        except Exception as e:
+            print(f"Failed to get embeddings: {e}")
+            raise
 
     def add(self, item: MemoryRecord):
         """
@@ -138,8 +143,8 @@ class MemoryManager:
         """
         for item in items:
             self.add(item)
-            
-            
-            
-        
-        
+
+
+
+
+
