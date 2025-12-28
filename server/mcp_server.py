@@ -1,3 +1,8 @@
+import sys
+import os
+# Add parent directory to path to allow importing from src
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from mcp.server.fastmcp import FastMCP, Image
 from mcp.server.fastmcp.prompts import base
 from mcp.types import TextContent
@@ -5,8 +10,6 @@ from mcp import types
 from PIL import Image as PILImage
 from typing import List
 import math
-import sys
-import os
 import json
 import faiss
 import numpy as np
@@ -14,7 +17,7 @@ from pathlib import Path
 from markitdown import MarkItDown
 import time
 import logging
-from models import AddInput, AddOutput, SqrtInput, SqrtOutput, StringsToIntsInput, StringsToIntsOutput, ExpSumInput, ExpSumOutput, ProductChunkTyped, ProductMetadata, ProductResponse, ProductMetadataSubset
+from src.models.schemas import AddInput, AddOutput, SqrtInput, SqrtOutput, StringsToIntsInput, StringsToIntsOutput, ExpSumInput, ExpSumOutput, ProductChunkTyped, ProductMetadata, ProductResponse, ProductMetadataSubset
 from PIL import Image as PILImage
 from tqdm import tqdm
 import hashlib
@@ -33,7 +36,7 @@ gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Gemini Embedding Model
 EMBED_MODEL = "text-embedding-004"  # Google's text embedding model
-ROOT = Path(__file__).parent.resolve()
+ROOT = Path(__file__).parent.parent.resolve()
 
 def get_embeddings(text: str)-> np.ndarray:
     """
@@ -441,7 +444,7 @@ def process_product_documents():
     Maintain metadata 
     """
     mcp_log("INFO", "Indexing documents with MarkItDown...")
-    ROOT = Path(__file__).parent.resolve()
+    ROOT = Path(__file__).parent.parent.resolve()
     DOC_PATH = ROOT / "documents"
     INDEX_CACHE = ROOT / "faiss_index"
     INDEX_CACHE.mkdir(exist_ok=True)

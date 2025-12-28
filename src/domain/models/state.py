@@ -1,13 +1,6 @@
-"""
-State definition for LangGraph agent.
-Defines the AgentState TypedDict that holds all state throughout the agent execution.
-"""
 from typing import TypedDict, List, Optional, Any
-from perception import PerceptionResult
-from memory import MemoryRecord, MemoryManager
-from action import ToolCallResult
-from mcp import ClientSession
-
+from src.domain.ports.output.memory_port import MemoryRecord, MemoryManager
+from src.domain.perception.models import PerceptionResult
 
 class AgentState(TypedDict):
     """

@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from typing import Optional, Dict, List
 import re
 
-    
 class ProductMetadata(BaseModel):
     id: int
     price: float
@@ -296,14 +295,3 @@ class ExpSumInput(BaseModel):
 
 class ExpSumOutput(BaseModel):
     result: float
-
-
-# if __name__ == "__main__":
-#     import json
-#     from pprint import pprint
-#     with open("/Users/chiragtagadiya/MyProjects/EAG1/RAG-MCP/documents/1163.json", "r") as f:
-#         data = json.load(f)
-#     product = ProductChunkTyped.from_json(data)
-#     json_formatted_str = json.dumps(product.model_dump(), indent=2)
-#     print(json_formatted_str)
-#     # pprint(product)
