@@ -2,7 +2,7 @@ import os
 from typing import Any
 from google import genai
 from dotenv import load_dotenv
-from src.domain.ports.output.llm_port import LLMProvider
+from domain.llm.llm_port import LLMProvider
 from src.utils.logger import log
 from pydantic import BaseModel
 
@@ -27,7 +27,7 @@ class GeminiLLMAdapter(LLMProvider):
             log("llm_adapter", f"Error generating content: {e}")
             raise
 
-    def generate_structured(self, prompt: str, schema: BaseModel) -> Any:
+    def generate_structured(self, prompt: str, schema: BaseModel) -> BaseModel:
         response = self.client.models.generate_content(
             model=self.model_name,
             contents=prompt,

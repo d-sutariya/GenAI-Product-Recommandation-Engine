@@ -1,5 +1,5 @@
 from typing import TypedDict, List, Optional, Any
-from src.domain.ports.output.memory_port import MemoryRecord, MemoryManager
+from domain.memory.memory_port import MemoryRecord, MemoryManager
 from src.domain.perception.models import PerceptionResult
 
 class AgentState(TypedDict):

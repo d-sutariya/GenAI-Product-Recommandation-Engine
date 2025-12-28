@@ -1,6 +1,6 @@
 from typing import List, Optional
-from src.domain.ports.output.llm_port import LLMProvider
-from src.domain.ports.output.memory_port import MemoryRecord
+from domain.llm.llm_port import LLMProvider
+from domain.memory.memory_port import MemoryRecord
 from src.domain.perception.models import PerceptionResult
 from src.domain.decision.models import DecisionResult
 

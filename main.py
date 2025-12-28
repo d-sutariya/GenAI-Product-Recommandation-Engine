@@ -5,12 +5,12 @@ import sys
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from src.utils.logger import log
-from src.domain.models.state import AgentState
-from src.infrastructure.adapters.output.gemini_adapter import GeminiLLMAdapter
-from src.infrastructure.adapters.output.faiss_memory_adapter import FaissMemoryAdapter
-from src.infrastructure.adapters.output.mcp_tool_adapter import MCPToolAdapter
-from src.domain.services.perception_logic import PerceptionService
-from src.domain.services.reasoning_logic import DecisionService
+from domain.shared.state import AgentState
+from infrastructure.llm.gemini_adapter import GeminiLLMAdapter
+from infrastructure.memory.faiss_memory_adapter import FaissMemoryAdapter
+from infrastructure.tools.mcp_tool_adapter import MCPToolAdapter
+from src.application.services.perception import PerceptionService
+from src.application.services.reasoning import DecisionService
 from src.application.services.agent_orchestrator import AgentWorkflow
 
 async def main(user_input: str):

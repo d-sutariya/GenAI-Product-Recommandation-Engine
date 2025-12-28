@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 
 class LLMProvider(ABC):
@@ -9,6 +8,6 @@ class LLMProvider(ABC):
         pass
     
     @abstractmethod
-    def generate_structured(self, prompt: str, schema: Any) -> Any:
+    def generate_structured(self, prompt: str, schema: BaseModel) -> BaseModel:
         """Generates structured data (like JSON or Pydantic) from a prompt."""
         pass

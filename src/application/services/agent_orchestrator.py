@@ -1,9 +1,9 @@
 from langgraph.graph import StateGraph, END
-from src.domain.models.state import AgentState
-from src.application.services.perception_logic import PerceptionService
-from src.application.services.reasoning_logic import DecisionService
-from src.domain.ports.output.memory_port import MemoryStore, MemoryRecord
-from src.domain.ports.output.tool_port import ToolExecutor
+from domain.shared.state import AgentState
+from application.services.perception import PerceptionService
+from application.services.reasoning import DecisionService
+from domain.memory.memory_port import MemoryStore, MemoryRecord
+from domain.tools.tool_port import ToolExecutor
 from google import genai
 from src.utils.logger import log
 import json
@@ -40,23 +40,23 @@ class AgentWorkflow:
 
     def _decision_node(self, state: AgentState) -> AgentState:
         log("decision", "Generating plan...")
-        plan = self.decision_service.generate_plan(
+        decision = self.decision_service.generate_plan(
             state["perception"],
             state["memory_items"],
             state["tool_descriptions"]
         )
-        state["decision"] = plan
-        if plan.startswith("FINAL_ANSWER:"):
-            state["final_answer"] = plan
+        state["decision"] = decision
+        if decision.decision_type == "final_answer":
+            state["final_answer"] = decision.final_answer
             state["should_continue"] = False
-        log("decision", f"Plan: {plan}")
+        log("decision", f"Plan: {decision}")
         return state
 
     async def _tool_node(self, state: AgentState) -> AgentState:
         log("tool", "Executing tool...")
         decision = state["decision"]
-        if decision.startswith("FINAL_ANSWER:"):
-            state["final_answer"] = decision
+        if decision.decision_type == "final_answer":
+            state["final_answer"] = decision.final_answer
             state["should_continue"] = False
             return state
 

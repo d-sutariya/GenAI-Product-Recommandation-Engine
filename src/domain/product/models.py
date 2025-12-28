@@ -270,28 +270,3 @@ class ProductResponse(BaseModel):
             )
         except Exception as e:
             raise ValueError(f"Error parsing product chunk: {str(e)}\nProduct content: {chunk.product_content}")
-
-class AddInput(BaseModel):
-    a: int
-    b: int
-
-class AddOutput(BaseModel):
-    result: int
-
-class SqrtInput(BaseModel):
-    a: int
-
-class SqrtOutput(BaseModel):
-    result: float
-
-class StringsToIntsInput(BaseModel):
-    string: str
-
-class StringsToIntsOutput(BaseModel):
-    ascii_values: List[int]
-
-class ExpSumInput(BaseModel):
-    int_list: List[int]
-
-class ExpSumOutput(BaseModel):
-    result: float
