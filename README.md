@@ -81,7 +81,7 @@ RAG-MCP/
 1.  **Clone the repository**
 2.  **Install dependencies**:
     ```bash
-    pip install -r requirements.txt
+    uv pip install -r requirements.txt
     ```
 3.  **Environment Setup**:
     Create a `.env` file in the root directory:
