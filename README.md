@@ -75,15 +75,45 @@ RAG-MCP/
 ### Prerequisites
 *   Python 3.10+
 *   Google Gemini API Key
+*   [uv](https://docs.astral.sh/uv/) - Fast Python package installer
 
 ### Installation
 
 1.  **Clone the repository**
-2.  **Install dependencies**:
+    ```bash
+    git clone https://github.com/d-sutariya/GenAI-Product-Recommandation-Engine.git
+    cd RAG-MCP
+    ```
+
+2.  **Install uv** (if not already installed):
+    ```bash
+    # On macOS and Linux
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    
+    # On Windows
+    powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+
+3.  **Create a virtual environment**:
+    ```bash
+    uv venv
+    ```
+
+4.  **Activate the virtual environment**:
+    ```bash
+    # On Windows (Git Bash)
+    source .venv/Scripts/activate
+    
+    # On macOS/Linux
+    source .venv/bin/activate
+    ```
+
+5.  **Install dependencies**:
     ```bash
     uv pip install -r requirements.txt
     ```
-3.  **Environment Setup**:
+
+6.  **Environment Setup**:
     Create a `.env` file in the root directory:
     ```ini
     GEMINI_API_KEY=your_key_here
