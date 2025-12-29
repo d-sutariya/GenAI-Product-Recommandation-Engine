@@ -1,4 +1,4 @@
-from domain.llm.llm_port import LLMProvider
+from src.domain.llm.llm_port import LLMProvider
 from src.domain.perception.models import PerceptionResult
 
 class PerceptionService:

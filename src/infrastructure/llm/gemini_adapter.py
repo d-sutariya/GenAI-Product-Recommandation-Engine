@@ -2,7 +2,7 @@ import os
 from typing import Any
 from google import genai
 from dotenv import load_dotenv
-from domain.llm.llm_port import LLMProvider
+from src.domain.llm.llm_port import LLMProvider
 from src.utils.logger import log
 from pydantic import BaseModel
 

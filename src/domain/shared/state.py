@@ -1,7 +1,8 @@
 from typing import TypedDict, List, Optional, Any
-from domain.memory.memory_port import MemoryRecord, MemoryManager
+from src.domain.memory.memory_port import MemoryRecord
 from src.domain.perception.models import PerceptionResult
-
+from src.domain.tools.models import ToolCallResult
+from mcp import ClientSession
 class AgentState(TypedDict):
     """
     State definition for the RAG agent graph.
@@ -22,7 +23,7 @@ class AgentState(TypedDict):
     mcp_session: ClientSession
     mcp_tools: List[Any]
     tool_descriptions: str
-    memory: MemoryManager
+    # memory: MemoryManager
     
     # Control flow
     step: int

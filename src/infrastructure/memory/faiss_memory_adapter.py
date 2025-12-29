@@ -3,8 +3,8 @@ import numpy as np
 import os
 from typing import List, Optional
 from dotenv import load_dotenv
-from src.domain.memory.models import  MemoryRecord
-from infrastructure.llm.gemini_adapter import GeminiLLMAdapter
+from src.domain.memory.models import MemoryRecord
+from src.domain.memory.memory_port import MemoryStore
 from google import genai
 
 load_dotenv()

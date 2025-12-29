@@ -5,10 +5,10 @@ import sys
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from src.utils.logger import log
-from domain.shared.state import AgentState
-from infrastructure.llm.gemini_adapter import GeminiLLMAdapter
-from infrastructure.memory.faiss_memory_adapter import FaissMemoryAdapter
-from infrastructure.tools.mcp_tool_adapter import MCPToolAdapter
+from src.domain.shared.state import AgentState
+from src.infrastructure.llm.gemini_adapter import GeminiLLMAdapter
+from src.infrastructure.memory.faiss_memory_adapter import FaissMemoryAdapter
+from src.infrastructure.tools.mcp_tool_adapter import MCPToolAdapter
 from src.application.services.perception import PerceptionService
 from src.application.services.reasoning import DecisionService
 from src.application.services.agent_orchestrator import AgentWorkflow
