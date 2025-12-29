@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from google import genai
 from markitdown import MarkItDown
 import hashlib
-from src.domain.models.schemas import ProductChunkTyped, ProductMetadata, ProductResponse, ProductMetadataSubset
+from src.domain.product.models import ProductChunkTyped, ProductMetadata, ProductResponse, ProductMetadataSubset
 
 load_dotenv()
 
