@@ -35,7 +35,7 @@ def get_embeddings(text: str)-> np.ndarray:
     try:
         response = gemini_client.models.embed_content(
             model=EMBED_MODEL,
-            content=text
+            contents=[text]
         )
         return np.array(response.embeddings[0].values, dtype=np.float32)
     except Exception as e:
@@ -235,7 +235,7 @@ def search_product_documents(query: str, top_k: int = 5)-> list[ProductResponse]
         query_embedding = query_embedding.reshape(1, -1)
         # Search returns (D, I) where D is distances and I is indices
         D, I = index.search(query_embedding, k=top_k)
-        print(f"Distances: {D}, Indices: {I}")
+        mcp_log("SEARCH", f"Distances: {D}, Indices: {I}")
         
         results = []
         for idx in I[0]:  # I[0] because I is a 2D array
@@ -356,30 +356,11 @@ def ensure_faiss_ready():
     else:
         mcp_log("INFO", "Index already exists. Skipping regeneration.")
 
-
-
 if __name__ == "__main__":
-    print("START MCP SERVER")
+    mcp_log("INFO", "START MCP SERVER")
     
-    if len(sys.argv) > 1 and sys.argv[1] == "dev":
-        mcp.run() # Run without transport for dev server
-    else:
-        # Start the server in a separate thread
-        import threading
-        server_thread = threading.Thread(target=lambda: mcp.run(transport="stdio"))
-        server_thread.daemon = True
-        server_thread.start()   
-    
-        time.sleep(2)
-        print("Indexing documents with MarkItDown...")
-        process_product_documents()
-
-        # search_product_documents("backpack")
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            print("\nShutting down...")
+    # Start the MCP server - this will block and handle stdio
+    mcp.run(transport="stdio")
 
 
 

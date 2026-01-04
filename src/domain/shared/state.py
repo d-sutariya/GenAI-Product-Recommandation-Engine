@@ -2,6 +2,7 @@ from typing import TypedDict, List, Optional, Any
 from src.domain.memory.memory_port import MemoryRecord
 from src.domain.perception.models import PerceptionResult
 from src.domain.tools.models import ToolCallResult
+from src.domain.decision.models import DecisionResult
 from mcp import ClientSession
 class AgentState(TypedDict):
     """
@@ -16,7 +17,7 @@ class AgentState(TypedDict):
     # Cognitive layers
     perception: Optional[PerceptionResult]
     memory_items: List[MemoryRecord]  # Retrieved memories for current query (replaced each iteration)
-    decision: str
+    decision: Optional[DecisionResult]
     tool_result: Optional[ToolCallResult]
     
     # MCP context (passed through state but not modified by LangGraph)

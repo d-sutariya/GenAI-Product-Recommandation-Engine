@@ -56,33 +56,18 @@ class AgentWorkflow:
         if decision.decision_type == "final_answer":
             state["final_answer"] = decision.final_answer
             state["should_continue"] = False
-            return state
 
-        # In Hexagonal, we rely on the ToolExecutor adapter to handle parsing if possible,
-        # or we do it here. Our MCP Adapter implementation had `execute_raw` which parses string.
-        # However, interface had `execute(name, args)`. 
-        # Let's check if our adapter supports string parsing or if we need to do it.
-        # For this refactor I added `execute_raw` to the adapter specifically for this use case.
-        # But `ToolExecutor` interface didn't have it. Ideally we should have added it to interface.
-        # Let's assume we cast or updated interface.
-        
-        try:
-             # We rely on convention that our adapter has this method or we used a concrete class type hint
-             # Strict hexagonal would require the interface to have `execute_from_string`
-             if hasattr(self.tool_executor, 'execute_raw'):
-                 result = await self.tool_executor.execute_raw(decision)
-             else:
-                 # Fallback/Mock logic
-                 raise NotImplementedError("Executor does not support raw string execution")
+        elif decision.decision_type == "tool_call":
+            tool_name = decision.tool_name
+            tool_args = decision.tool_input
+            try:
+                result = await self.tool_executor.execute(tool_name, tool_args)
+                state["tool_result"] = result
+                log("tool", f"Tool {tool_name} executed successfully.")
+            except Exception as e:
+                log("tool", f"Tool execution failed: {e}")
+                state["error"] = str(e)
 
-             state["tool_result"] = result
-             state["error"] = None
-             log("tool", f"Result: {result.result}")
-        except Exception as e:
-            state["error"] = str(e)
-            state["tool_result"] = None
-            log("error", f"Tool failed: {e}")
-        
         return state
 
     def _memory_update_node(self, state: AgentState) -> AgentState:
@@ -108,9 +93,9 @@ class AgentWorkflow:
         return state
 
     def _route_decision(self, state: AgentState) -> str:
-        if state.get("final_answer") or state["decision"].startswith("FINAL_ANSWER:"):
+        if state.get("final_answer") or state["decision"].decision_type == "final_answer":
             return "end"
-        if state["decision"].startswith("FUNCTION_CALL:"):
+        if state["decision"].decision_type == "tool_call":
             return "tool"
         return "end"
 

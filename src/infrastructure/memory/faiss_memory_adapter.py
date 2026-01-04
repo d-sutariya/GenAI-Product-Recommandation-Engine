@@ -11,9 +11,6 @@ load_dotenv()
 
 class FaissMemoryAdapter(MemoryStore):
     def __init__(self, embedding_model: str = "text-embedding-004"):
-        # We need an embedder. Ideally, Embedder should be its own Port.
-        # For simplicity in this refactor, we reuse the Gemini Client structure or separate it.
-        # Let's use the GeminiAdapter logic or a lightweight version of it for embeddings.
         self.gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
         self.output_dim = 768 # Default for gemini 004 text-embedding
         self.embedding_model = embedding_model
@@ -26,7 +23,7 @@ class FaissMemoryAdapter(MemoryStore):
         try:
             response = self.gemini_client.models.embed_content(
                 model=self.embedding_model,
-                content=text
+                contents=[text]
             )
             # Assuming response structure based on original code
             return np.array(response.embeddings[0].values, dtype=np.float32)

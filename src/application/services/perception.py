@@ -16,5 +16,11 @@ class PerceptionService:
             parsed = self.llm.generate_structured(prompt, schema=PerceptionResult)
             return parsed
         except Exception as e:
-            # Fallback
-            return PerceptionResult(user_input=user_input)
+            # Fallback with basic defaults
+            return PerceptionResult(
+                user_input=user_input,
+                modified_user_input=user_input,
+                intent="product_search",
+                entities=[],
+                tool_hint="search_product_documents"
+            )
