@@ -19,7 +19,7 @@ async def main(user_input: str):
     Main agent function using Enterprise Hexagonal Architecture.
     """
     try:
-        log("agent", "Starting Hexagonal Agent...")
+        log("agent", "Starting Product Recommendation Agent...")
         
         # 1. Initialize Adapters (Infrastructure)
         # LLM
@@ -34,8 +34,10 @@ async def main(user_input: str):
 
         # MCP Server Params
         server_params = StdioServerParameters(
-            command="python",
-            args=["server/mcp_server.py"],
+            command="C:\\Users\\DELL\\miniconda3\\Scripts\\uv.EXE",
+            args=[
+                "C:\\Users\\DELL\\Desktop\\project\\rag_mcp_product_recommandation\\RAG_MCP\\server\\mcp_server.py"
+			],
             cwd="."
         )
 

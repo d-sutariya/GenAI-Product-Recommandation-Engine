@@ -181,3 +181,4 @@ cython_debug/
 commands.txt
 faiss_index/
 documents/
+.vscode/
