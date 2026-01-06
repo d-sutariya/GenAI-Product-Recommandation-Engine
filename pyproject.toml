@@ -145,4 +145,5 @@ dependencies = [
     "xxhash==3.6.0",
     "yarl==1.22.0",
     "zstandard==0.25.0",
+    "milvus-lite>=2.5.1",
 ]

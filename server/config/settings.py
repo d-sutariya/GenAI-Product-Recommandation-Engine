@@ -18,9 +18,7 @@ class Settings(BaseSettings):
     ROOT_DIR: Path = Path(__file__).parent.parent.parent.resolve()
     DOCUMENTS_DIR: Path = ROOT_DIR / "documents"
     
-    # Milvus Configuration
-    MILVUS_HOST: str = "localhost"
-    MILVUS_PORT: int = 19530
+    # Milvus Lite Configuration
     MILVUS_COLLECTION_NAME: str = "product_collection"
     MILVUS_DIMENSION: int = 768  # Dimension for text-embedding-004
     

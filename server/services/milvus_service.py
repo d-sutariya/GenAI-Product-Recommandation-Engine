@@ -1,84 +1,62 @@
 """
-Milvus database service for vector operations
+Milvus Lite database service for vector operations
 """
 
-from pymilvus import (
-    connections,
-    Collection,
-    CollectionSchema,
-    FieldSchema,
-    DataType,
-    utility
-)
-from typing import List, Dict, Any, Optional
+from pymilvus import MilvusClient
+from typing import List, Dict, Any
 import numpy as np
+from pathlib import Path
 
 from config.settings import settings
 from utils.logger import logger
 
 
 class MilvusService:
-    """Service for managing Milvus vector database operations"""
+    """Service for managing Milvus Lite vector database operations"""
     
     def __init__(self):
-        """Initialize Milvus connection"""
+        """Initialize Milvus Lite connection"""
         self.collection_name = settings.MILVUS_COLLECTION_NAME
         self.dimension = settings.MILVUS_DIMENSION
-        self.collection: Optional[Collection] = None
+        self.db_file = settings.ROOT_DIR / "milvus_lite" / "products.db"
+        self.db_file.parent.mkdir(exist_ok=True)
+        self.client: MilvusClient = None
+        self.connect()
         
     def connect(self) -> None:
-        """Establish connection to Milvus server"""
+        """Establish connection to Milvus Lite"""
         try:
-            connections.connect(
-                alias="default",
-                host=settings.MILVUS_HOST,
-                port=settings.MILVUS_PORT
-            )
-            logger.success(f"Connected to Milvus at {settings.MILVUS_HOST}:{settings.MILVUS_PORT}")
+            self.client = MilvusClient(str(self.db_file))
+            logger.success(f"Connected to Milvus Lite at {self.db_file}")
         except Exception as e:
-            logger.error(f"Failed to connect to Milvus: {e}")
+            logger.error(f"Failed to connect to Milvus Lite: {e}")
             raise
     
     def disconnect(self) -> None:
-        """Disconnect from Milvus server"""
+        """Disconnect from Milvus Lite"""
         try:
-            connections.disconnect(alias="default")
-            logger.info("Disconnected from Milvus")
+            if self.client:
+                self.client.close()
+            logger.info("Disconnected from Milvus Lite")
         except Exception as e:
-            logger.error(f"Failed to disconnect from Milvus: {e}")
+            logger.error(f"Failed to disconnect from Milvus Lite: {e}")
     
     def create_collection(self) -> None:
         """Create product collection if it doesn't exist"""
         try:
-            if utility.has_collection(self.collection_name):
+            # Check if collection exists
+            collections = self.client.list_collections()
+            
+            if self.collection_name in collections:
                 logger.info(f"Collection '{self.collection_name}' already exists")
-                self.collection = Collection(self.collection_name)
                 return
             
-            # Define schema
-            fields = [
-                FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=False),
-                FieldSchema(name="product_id", dtype=DataType.INT64),
-                FieldSchema(name="product_content", dtype=DataType.VARCHAR, max_length=65535),
-                FieldSchema(name="metadata", dtype=DataType.VARCHAR, max_length=65535),
-                FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=self.dimension)
-            ]
-            
-            schema = CollectionSchema(
-                fields=fields,
-                description="Product collection with embeddings"
-            )
-            
-            # Create collection
-            self.collection = Collection(
-                name=self.collection_name,
-                schema=schema
+            self.client.create_collection(
+                collection_name=self.collection_name,
+                dimension=self.dimension
             )
             
             logger.success(f"Created collection '{self.collection_name}'")
-            
-            # Create index for vector field
-            self.create_index()
             
         except Exception as e:
             logger.error(f"Failed to create collection: {e}")
@@ -86,34 +64,7 @@ class MilvusService:
     
     def create_index(self) -> None:
         """Create index on embedding field for efficient search"""
-        try:
-            index_params = {
-                "metric_type": "L2",
-                "index_type": "IVF_FLAT",
-                "params": {"nlist": 128}
-            }
-            
-            self.collection.create_index(
-                field_name="embedding",
-                index_params=index_params
-            )
-            
-            logger.success("Created index on embedding field")
-        except Exception as e:
-            logger.error(f"Failed to create index: {e}")
-            raise
-    
-    def load_collection(self) -> None:
-        """Load collection into memory for search"""
-        try:
-            if self.collection is None:
-                self.collection = Collection(self.collection_name)
-            
-            self.collection.load()
-            logger.info(f"Loaded collection '{self.collection_name}' into memory")
-        except Exception as e:
-            logger.error(f"Failed to load collection: {e}")
-            raise
+        raise NotImplementedError("Index creation is not yet implemented for Milvus Lite")
     
     def insert_data(
         self,
@@ -124,7 +75,7 @@ class MilvusService:
         embeddings: List[np.ndarray]
     ) -> None:
         """
-        Insert product data into Milvus collection
+        Insert product data into Milvus Lite collection
         
         Args:
             ids: Unique IDs for each record
@@ -134,24 +85,28 @@ class MilvusService:
             embeddings: Product embeddings
         """
         try:
-            if self.collection is None:
-                self.collection = Collection(self.collection_name)
-            
             # Convert embeddings to list format
-            embedding_list = [emb.tolist() for emb in embeddings]
+            embedding_list = [emb.tolist() if isinstance(emb, np.ndarray) else emb for emb in embeddings]
             
+            # Prepare data for insertion
             data = [
-                ids,
-                product_ids,
-                product_contents,
-                metadatas,
-                embedding_list
+                {
+                    "id": ids[i],
+                    "vector": embedding_list[i],
+                    "product_id": product_ids[i],
+                    "product_content": product_contents[i],
+                    "metadata": metadatas[i]
+                }
+                for i in range(len(ids))
             ]
             
-            self.collection.insert(data)
-            self.collection.flush()
+            # Insert data
+            result = self.client.insert(
+                collection_name=self.collection_name,
+                data=data
+            )
             
-            logger.success(f"Inserted {len(ids)} records into collection")
+            logger.success(f"Inserted {result.get('insert_count', len(ids))} records into collection")
         except Exception as e:
             logger.error(f"Failed to insert data: {e}")
             raise
@@ -172,34 +127,24 @@ class MilvusService:
             List of search results with product information
         """
         try:
-            if self.collection is None:
-                self.collection = Collection(self.collection_name)
+            query_vector = query_embedding.tolist() if isinstance(query_embedding, np.ndarray) else query_embedding
             
-            # Ensure collection is loaded
-            self.load_collection()
-            
-            search_params = {
-                "metric_type": "L2",
-                "params": {"nprobe": 10}
-            }
-            
-            results = self.collection.search(
-                data=[query_embedding.tolist()],
-                anns_field="embedding",
-                param=search_params,
+            results = self.client.search(
+                collection_name=self.collection_name,
+                data=[query_vector],
                 limit=top_k,
                 output_fields=["product_id", "product_content", "metadata"]
             )
             
             # Format results
             formatted_results = []
-            for hits in results:
-                for hit in hits:
+            if results and len(results) > 0:
+                for result in results[0]:
                     formatted_results.append({
-                        "id": hit.entity.get("product_id"),
-                        "product_content": hit.entity.get("product_content"),
-                        "metadata": hit.entity.get("metadata"),
-                        "distance": hit.distance
+                        "id": result.get("entity", {}).get("product_id"),
+                        "product_content": result.get("entity", {}).get("product_content"),
+                        "metadata": result.get("entity", {}).get("metadata"),
+                        "distance": result.get("distance", 0)
                     })
             
             logger.info(f"Found {len(formatted_results)} results")
@@ -212,10 +157,8 @@ class MilvusService:
     def count_entities(self) -> int:
         """Get number of entities in collection"""
         try:
-            if self.collection is None:
-                self.collection = Collection(self.collection_name)
-            
-            return self.collection.num_entities
+            stats = self.client.get_collection_stats(collection_name=self.collection_name)
+            return stats.get('row_count', 0)
         except Exception as e:
             logger.error(f"Failed to count entities: {e}")
             return 0
@@ -223,7 +166,7 @@ class MilvusService:
     def drop_collection(self) -> None:
         """Drop the collection (use with caution)"""
         try:
-            utility.drop_collection(self.collection_name)
+            self.client.drop_collection(collection_name=self.collection_name)
             logger.warn(f"Dropped collection '{self.collection_name}'")
         except Exception as e:
             logger.error(f"Failed to drop collection: {e}")

@@ -182,3 +182,5 @@ commands.txt
 faiss_index/
 documents/
 .vscode/
+milvus_lite/
+milvus_cache/

@@ -28,10 +28,7 @@ def initialize_services():
     """Initialize all services and ensure data is ready"""
     try:
         logger.info("Initializing MCP Server services...")
-        
-        # Connect to Milvus
-        milvus_service.connect()
-        
+                
         # Create collection if it doesn't exist
         milvus_service.create_collection()
         
@@ -39,15 +36,19 @@ def initialize_services():
         status = ingestion_service.get_ingestion_status()
         logger.info(f"Ingestion status: {status}")
         
-        if status["pending_files"] > 0:
+        # Force re-ingestion if cache says ingested but database is empty
+        force_reingest = (status["ingested_files"] > 0 and status["entities_in_milvus"] == 0)
+        
+        if force_reingest:
+            logger.warn("Cache shows ingested files but database is empty - forcing re-ingestion")
+            ingested_count = ingestion_service.ingest_products(force_reingest=True)
+            logger.success(f"Re-ingested {ingested_count} products")
+        elif status["pending_files"] > 0:
             logger.info(f"Found {status['pending_files']} pending files, starting ingestion...")
             ingested_count = ingestion_service.ingest_products()
             logger.success(f"Ingested {ingested_count} products")
         else:
             logger.info("All products already ingested")
-        
-        # Load collection into memory
-        milvus_service.load_collection()
         
         logger.success("All services initialized successfully")
         
