@@ -1,7 +1,7 @@
 
 import pytest
 from unittest.mock import Mock, AsyncMock, patch
-from src.infrastructure.tools.mcp_tool_adapter import MCPToolAdapter
+from client.infrastructure.tools.mcp_tool_adapter import MCPToolAdapter
 
 @pytest.fixture
 def mock_session():

@@ -2,12 +2,12 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 import numpy as np
 
-from src.infrastructure.memory.faiss_memory_adapter import FaissMemoryAdapter
-from src.domain.memory.models import MemoryRecord
+from client.infrastructure.memory.faiss_memory_adapter import FaissMemoryAdapter
+from client.domain.memory.models import MemoryRecord
 
 @pytest.fixture
 def mock_genai_client():
-    with patch('src.infrastructure.memory.faiss_memory_adapter.genai.Client') as mock:
+    with patch('client.infrastructure.memory.faiss_memory_adapter.genai.Client') as mock:
         client_instance = mock.return_value
         # Mock embeddings response
         mock_embedding = MagicMock()
@@ -21,7 +21,7 @@ def mock_genai_client():
 
 @pytest.fixture
 def mock_faiss():
-    with patch('src.infrastructure.memory.faiss_memory_adapter.faiss') as mock:
+    with patch('client.infrastructure.memory.faiss_memory_adapter.faiss') as mock:
         index_mock = Mock()
         mock.IndexFlatL2.return_value = index_mock
         # Mock search return: distances (D) and indices (I)

@@ -1,10 +1,10 @@
 
 import pytest
 from unittest.mock import Mock, MagicMock
-from src.application.services.reasoning import DecisionService
-from src.domain.perception.models import PerceptionResult
-from src.domain.decision.models import DecisionResult
-from src.domain.memory.models import MemoryRecord
+from client.application.services.reasoning import DecisionService
+from client.domain.perception.models import PerceptionResult
+from client.domain.decision.models import DecisionResult
+from client.domain.memory.models import MemoryRecord
 
 @pytest.fixture
 def mock_llm():

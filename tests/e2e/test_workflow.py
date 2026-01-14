@@ -1,14 +1,14 @@
 
 import pytest
 from unittest.mock import Mock, AsyncMock, MagicMock
-from src.application.services.agent_orchestrator import AgentWorkflow
-from src.application.services.perception import PerceptionService
-from src.application.services.reasoning import DecisionService
-from src.domain.perception.models import PerceptionResult
-from src.domain.decision.models import DecisionResult
-from src.domain.memory.memory_port import MemoryRecord
-from src.domain.memory.memory_port import MemoryStore
-from src.domain.tools.models import ToolCallResult
+from client.application.services.agent_orchestrator import AgentWorkflow
+from client.application.services.perception import PerceptionService
+from client.application.services.reasoning import DecisionService
+from client.domain.perception.models import PerceptionResult
+from client.domain.decision.models import DecisionResult
+from client.domain.memory.memory_port import MemoryRecord
+from client.domain.memory.memory_port import MemoryStore
+from client.domain.tools.models import ToolCallResult
 
 class MockMemoryStore(MemoryStore):
     def __init__(self):

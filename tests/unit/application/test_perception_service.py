@@ -1,8 +1,8 @@
 
 import pytest
 from unittest.mock import Mock, MagicMock
-from src.application.services.perception import PerceptionService
-from src.domain.perception.models import PerceptionResult
+from client.application.services.perception import PerceptionService
+from client.domain.perception.models import PerceptionResult
 
 @pytest.fixture
 def mock_llm():

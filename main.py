@@ -4,15 +4,15 @@ import os
 import sys
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from src.utils.logger import log
-from src.domain.shared.state import AgentState
-from src.infrastructure.llm.gemini_adapter import GeminiLLMAdapter
-from src.infrastructure.llm.huggingface_adapter import HFLLMAdapter
-from src.infrastructure.memory.faiss_memory_adapter import FaissMemoryAdapter
-from src.infrastructure.tools.mcp_tool_adapter import MCPToolAdapter
-from src.application.services.perception import PerceptionService
-from src.application.services.reasoning import DecisionService
-from src.application.services.agent_orchestrator import AgentWorkflow
+from client.utils.logger import log
+from client.domain.shared.state import AgentState
+from client.infrastructure.llm.gemini_adapter import GeminiLLMAdapter
+from client.infrastructure.llm.huggingface_adapter import HFLLMAdapter
+from client.infrastructure.memory.faiss_memory_adapter import FaissMemoryAdapter
+from client.infrastructure.tools.mcp_tool_adapter import MCPToolAdapter
+from client.application.services.perception import PerceptionService
+from client.application.services.reasoning import DecisionService
+from client.application.services.agent_orchestrator import AgentWorkflow
 
 async def main(user_input: str):
     """
@@ -79,10 +79,7 @@ async def main(user_input: str):
                         "memory_items": [],
                         "decision": "",
                         "tool_result": None,
-                        # "mcp_session": session, # No longer needed in state directly, managed by adapter
-                        # "mcp_tools": tools,     # No longer needed in state directly
                         "tool_descriptions": tool_descriptions,
-                        # "memory": memory,       # No longer needed in state directly
                         "step": 0,
                         "max_steps": 5,
                         "final_answer": None,
@@ -95,10 +92,10 @@ async def main(user_input: str):
 
                     final_answer = final_state.get("final_answer")
                     if final_answer:
-                        log("agent", f"✅ FINAL RESULT: {final_answer}")
+                        log("agent", f"FINAL RESULT: {final_answer}")
                         print("\n" + final_answer.replace("FINAL_ANSWER:", "").strip() + "\n")
                     else:
-                        log("agent", "⚠️ No final answer generated")
+                        log("agent", "No final answer generated")
                         print("No final answer generated.")
 
         except Exception as e:
@@ -114,7 +111,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         query = sys.argv[1]
     else:
-        query = input("🧑 What Product do you want to find Today? → ")
+        query = input("What Product do you want to find Today? → ")
     asyncio.run(main(query))
 
 

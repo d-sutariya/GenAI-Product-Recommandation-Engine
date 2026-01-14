@@ -1,7 +1,7 @@
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from src.infrastructure.llm.huggingface_adapter import HFLLMAdapter
+from client.infrastructure.llm.huggingface_adapter import HFLLMAdapter
 from pydantic import BaseModel
 
 class TestSchema(BaseModel):
@@ -9,7 +9,7 @@ class TestSchema(BaseModel):
 
 @pytest.fixture
 def mock_inference_client():
-    with patch('src.infrastructure.llm.huggingface_adapter.InferenceClient') as mock:
+    with patch('client.infrastructure.llm.huggingface_adapter.InferenceClient') as mock:
         yield mock
 
 @pytest.fixture
