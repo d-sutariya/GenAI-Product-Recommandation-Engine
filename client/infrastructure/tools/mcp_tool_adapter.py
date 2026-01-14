@@ -25,7 +25,7 @@ class MCPToolAdapter(ToolExecutor):
         )
 
     async def execute(self, tool_name: str, arguments: Dict[str, Any] = None) -> ToolCallResult:
-        log("tool", f"⚙️ Calling '{tool_name}' with: {arguments}")
+        log("tool", f"Calling '{tool_name}' with: {arguments}")
         
         result = await self.session.call_tool(tool_name, arguments=arguments)
         

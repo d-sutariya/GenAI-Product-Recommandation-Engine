@@ -8,15 +8,15 @@ console = Console()
 
 # Stage-to-style mapping
 STAGE_STYLES = {
-    "agent": {"emoji": "🤖", "color": "bright_cyan"},
-    "loop": {"emoji": "🔁", "color": "yellow"},
-    "perception": {"emoji": "🧠", "color": "bright_green"},
-    "memory": {"emoji": "🧵", "color": "magenta"},
-    "plan": {"emoji": "📋", "color": "blue"},
-    "parser": {"emoji": "🧩", "color": "cyan"},
-    "tool": {"emoji": "🛠️", "color": "bright_yellow"},
-    "server": {"emoji": "🖥️", "color": "bright_magenta"},
-    "default": {"emoji": "📌", "color": "white"},
+    "agent": {"emoji": "", "color": "bright_cyan"},
+    "loop": {"emoji": "", "color": "yellow"},
+    "perception": {"emoji": "", "color": "bright_green"},
+    "memory": {"emoji": "", "color": "magenta"},
+    "plan": {"emoji": "", "color": "blue"},
+    "parser": {"emoji": "", "color": "cyan"},
+    "tool": {"emoji": "", "color": "bright_yellow"},
+    "server": {"emoji": "", "color": "bright_magenta"},
+    "default": {"emoji": "", "color": "white"},
 }
 
 
