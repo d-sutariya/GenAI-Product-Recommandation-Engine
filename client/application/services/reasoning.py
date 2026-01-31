@@ -36,7 +36,8 @@ class DecisionService:
         2. If you need more information (like searching products, getting details), choose 'tool_call'.
         3. If you have enough information in Memory to answer the User Request, choose 'final_answer'.
         4. If you have search results, check if you need to refine/rank them using a tool.
-        5. ALWAYS provide a 'thought' explaining your decision.
+        5. If you are recommending a specific product in your 'final_answer', output its name in 'recommended_product'.
+        6. ALWAYS provide a 'thought' explaining your decision.
         """
         
         try:

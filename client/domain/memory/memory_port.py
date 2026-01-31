@@ -9,6 +9,6 @@ class MemoryStore(ABC):
         pass
 
     @abstractmethod
-    def retrieve(self, query: str, top_k: int = 3, session_filter: Optional[str] = None) -> List[MemoryRecord]:
+    def retrieve(self, query: str, top_k: int = 3, session_filter: Optional[str] = None, user_id: Optional[str] = None) -> List[MemoryRecord]:
         """Retrieve items from memory."""
         pass

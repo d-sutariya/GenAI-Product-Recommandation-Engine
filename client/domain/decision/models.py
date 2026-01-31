@@ -20,3 +20,7 @@ class DecisionResult(BaseModel):
         default=None, 
         description="The natural language response to the user. Required if decision_type is 'final_answer'."
     )
+    recommended_product: Optional[str] = Field(
+        default=None,
+        description="The name of the product being recommended, if any. Used to trigger add-to-cart logic."
+    )

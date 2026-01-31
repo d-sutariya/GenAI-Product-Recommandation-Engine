@@ -9,4 +9,5 @@ class MemoryRecord(BaseModel):
     tool_name: Optional[str] = None
     user_query: Optional[str] = None
     tags: List[str] = []
+    user_id: Optional[str] = None
     session_id: Optional[str] = None

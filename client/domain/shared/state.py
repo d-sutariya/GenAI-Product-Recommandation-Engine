@@ -12,15 +12,16 @@ class AgentState(TypedDict):
     # User input
     user_input: str
     original_query: str
+    user_id: Optional[str]
     session_id: str
     
     # Cognitive layers
     perception: Optional[PerceptionResult]
-    memory_items: List[MemoryRecord]  # Retrieved memories for current query (replaced each iteration)
+    memory_items: List[MemoryRecord]  # Retrieved memories 
     decision: Optional[DecisionResult]
     tool_result: Optional[ToolCallResult]
     
-    # MCP context (passed through state but not modified by LangGraph)
+    # MCP context
     mcp_session: ClientSession
     mcp_tools: List[Any]
     tool_descriptions: str

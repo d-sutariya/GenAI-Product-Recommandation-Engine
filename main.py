@@ -13,6 +13,7 @@ from client.infrastructure.tools.mcp_tool_adapter import MCPToolAdapter
 from client.application.services.perception import PerceptionService
 from client.application.services.reasoning import DecisionService
 from client.application.services.agent_orchestrator import AgentWorkflow
+from client.application.services.client_history_rag import ClientHistoryRAGService
 
 async def main(user_input: str):
     """
@@ -66,6 +67,9 @@ async def main(user_input: str):
                         memory_store=memory_adapter,
                         tool_executor=tool_adapter
                     )
+
+                    rag_service = ClientHistoryRAGService(memory_adapter, llm_adapter)
+                    user_id = "test_user_01"  # Hardcoded for CLI demo, auth is yet to implemented
                     
                     app = workflow_app.build()
 
@@ -75,6 +79,7 @@ async def main(user_input: str):
                         "user_input": user_input,
                         "original_query": user_input,
                         "session_id": session_id,
+                        "user_id": user_id,
                         "perception": None,
                         "memory_items": [],
                         "decision": "",
@@ -97,6 +102,9 @@ async def main(user_input: str):
                     else:
                         log("agent", "No final answer generated")
                         print("No final answer generated.")
+                    
+                    if final_answer:
+                        rag_service.add_interaction(user_id, user_input, final_answer.replace("FINAL_ANSWER:", "").strip(), session_id)
 
         except Exception as e:
             log("error", f"Fatal error: {str(e)}")
