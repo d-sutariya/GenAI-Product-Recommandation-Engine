@@ -69,7 +69,7 @@ async def main(user_input: str):
                     )
 
                     rag_service = ClientHistoryRAGService(memory_adapter, llm_adapter)
-                    user_id = "test_user_01"  # Hardcoded for CLI demo, auth is yet to implemented
+                    user_id = "test_user_01"  # Hardcoded for now, auth is yet to implemented
                     
                     app = workflow_app.build()
 

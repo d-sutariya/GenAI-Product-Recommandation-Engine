@@ -67,7 +67,7 @@ class FaissMemoryAdapter(MemoryStore):
             return []
 
         query_vec = self._get_embedding(query).reshape(1, -1)
-        D, I = self.index.search(query_vec, top_k * 5) # Increased overfetch to account for filtering
+        D, I = self.index.search(query_vec, top_k * 5) # overfetch for account filtering
 
         results = []
         for idx in I[0]:

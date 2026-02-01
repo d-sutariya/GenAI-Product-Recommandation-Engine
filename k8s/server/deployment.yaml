@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendation-server
+  namespace: product-engine
+  labels:
+    app: recommendation-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: recommendation-server
+  template:
+    metadata:
+      labels:
+        app: recommendation-server
+    spec:
+      containers:
+      - name: server
+        image: ghcr.io/your-org/recommendation-server:latest
+        ports:
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: app-config
+        - secretRef:
+            name: app-secrets
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 20
+          periodSeconds: 15
