@@ -8,20 +8,14 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements from the project root
-# We use the same requirements file for simplicity in this monorepo-like structure
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the client directory
+# Copy the client code
 COPY client/ /app/client/
-# Copy the entry point
-COPY main.py /app/main.py
 
-# Set PYTHONPATH to include the app directory
+# Set PYTHONPATH so 'client.xxx' imports work
 ENV PYTHONPATH=/app
 
-# Verify the environment (optional, for debugging)
-RUN python -c "import sys; print(sys.path)"
-
-# The client entry point
-CMD ["python", "main.py"]
+# Entry point points to the new client-specific file
+CMD ["python", "client/main.py"]

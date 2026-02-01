@@ -147,6 +147,3 @@ if __name__ == "__main__":
         except:
             pass
         logger.info("Server stopped")
-
-
-
