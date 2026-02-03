@@ -32,5 +32,4 @@ class AgentState(TypedDict):
     max_steps: int
     final_answer: Optional[str]
     error: Optional[str]
-    should_continue: bool
 

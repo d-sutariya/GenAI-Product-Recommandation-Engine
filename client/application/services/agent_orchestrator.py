@@ -49,11 +49,6 @@ class AgentWorkflow:
         state["decision"] = decision
         if decision.decision_type == "final_answer":
             state["final_answer"] = decision.final_answer
-            # Don't end immediately if we have a recommendation; let add_to_cart handle it
-            if decision.recommended_product:
-                state["should_continue"] = True
-            else:
-                state["should_continue"] = False
         log("decision", f"Plan: {decision}")
         return state
 
@@ -62,7 +57,6 @@ class AgentWorkflow:
         decision = state["decision"]
         if decision.decision_type == "final_answer":
             state["final_answer"] = decision.final_answer
-            state["should_continue"] = False
 
         elif decision.decision_type == "tool_call":
             tool_name = decision.tool_name
@@ -94,7 +88,6 @@ class AgentWorkflow:
             else:
                 print(f"\n[System] Product not added.\n")
         
-        state["should_continue"] = False
         return state
 
     def _memory_update_node(self, state: AgentState) -> AgentState:
@@ -141,7 +134,6 @@ class AgentWorkflow:
     
     def _error_handler(self, state: AgentState) -> AgentState:
         state["final_answer"] = f"FINAL_ANSWER: Error: {state.get('error')}"
-        state["should_continue"] = False
         return state
 
     def build(self):
@@ -177,7 +169,7 @@ class AgentWorkflow:
         workflow.add_conditional_edges(
             "memory_update",
             self._check_continue,
-            {"continue": "perception", "end": END, "error": "error_handler"}
+            {"continue": "decision", "end": END, "error": "error_handler"}
         )
         
         workflow.add_edge("error_handler", END)

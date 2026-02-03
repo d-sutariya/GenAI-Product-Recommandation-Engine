@@ -41,7 +41,7 @@ class ClientHistoryRAGService:
         self.memory_store.add(record)
         log("rag_service", f"Stored interaction for user {user_id}")
 
-    def get_context(self, user_id: str, query: str, top_k: int = 5) -> str:
+    def get_context(self, user_id: str, query: str, top_k: int = 2) -> str:
         """
         Retrieves relevant history for a user and query to be used as context for AI.
         """

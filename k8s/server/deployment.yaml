@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: ghcr.io/your-org/recommendation-server:latest
+        image: ghcr.io/deepsutariya346/recommendation-server:latest
         ports:
         - containerPort: 8000
           name: http

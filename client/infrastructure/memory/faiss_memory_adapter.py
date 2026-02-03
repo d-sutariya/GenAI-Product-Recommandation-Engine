@@ -17,7 +17,6 @@ class FaissMemoryAdapter(MemoryStore):
         
         self.index = None
         self.data: List[MemoryRecord] = []
-        self.embeddings: List[np.ndarray] = []
         self.index_file = "faiss_index.bin"
         self.data_file = "memory_data.pkl"
         self.load()
@@ -28,7 +27,6 @@ class FaissMemoryAdapter(MemoryStore):
                 model=self.embedding_model,
                 contents=[text]
             )
-            # Assuming response structure based on original code
             return np.array(response.embeddings[0].values, dtype=np.float32)
         except Exception as e:
             print(f"Failed to get embeddings: {e}")
@@ -36,7 +34,6 @@ class FaissMemoryAdapter(MemoryStore):
 
     def add(self, item: MemoryRecord) -> None:
         emb = self._get_embedding(item.text)
-        self.embeddings.append(emb)
         self.data.append(item)
 
         if self.index is None:
@@ -74,9 +71,6 @@ class FaissMemoryAdapter(MemoryStore):
             if idx >= len(self.data):
                 continue
             item = self.data[idx]
-
-            if session_filter and item.session_id != session_filter:
-                continue
 
             if user_id and item.user_id != user_id:
                 continue
