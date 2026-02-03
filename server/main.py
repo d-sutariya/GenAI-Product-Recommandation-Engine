@@ -17,8 +17,16 @@ from tools.product_tools import (
     product_metadata_analysis_for_refine_or_tuning_search_result
 )
 
+from prometheus_client import start_http_server, Counter, Histogram
+
 # Load environment variables
 load_dotenv()
+
+# --- Prometheus Metrics ---
+TOOL_USAGE_TOTAL = Counter('tool_usage_count', 'Tool Usage Count', ['tool_name'])
+RAG_LATENCY = Histogram('rag_retrieval_latency_seconds', 'RAG Retrieval Latency', ['db_type'])
+LLM_TOKEN_USAGE = Counter('llm_token_usage_total', 'LLM Token Usage', ['model', 'type']) # type=prompt/completion
+# --------------------------
 
 # Initialize FastMCP server
 mcp = FastMCP(settings.SERVER_NAME)
@@ -69,7 +77,9 @@ def search_products(query: str, top_k: int = 5):
     @param top_k: Number of top results to return (default: 5)
     @return: List of ProductResponse objects
     """
-    return search_product_documents(query, top_k)
+    TOOL_USAGE_TOTAL.labels(tool_name="search_products").inc()
+    with RAG_LATENCY.labels(db_type="milvus").time():
+        return search_product_documents(query, top_k)
 
 
 @mcp.tool()
@@ -83,6 +93,7 @@ def format_product_metadata(product_response_list):
     Returns:
         str: Formatted string of product metadata
     """
+    TOOL_USAGE_TOTAL.labels(tool_name="format_product_metadata").inc()
     return preety_print_product_metadata_response(product_response_list)
 
 
@@ -105,6 +116,7 @@ def rerank_products(product_responses, ranked_indices):
         If product_responses = [A, B, C] and ranked_indices = [2, 0], 
         the returned result will be [C, A]
     """
+    TOOL_USAGE_TOTAL.labels(tool_name="rerank_products").inc()
     return return_ranked_product_response_from_ranked_index(product_responses, ranked_indices)
 
 
@@ -120,6 +132,7 @@ def get_product_attributes():
     Returns:
         dict: A dictionary with keys representing attribute groups and values as lists of attribute names
     """
+    TOOL_USAGE_TOTAL.labels(tool_name="get_product_attributes").inc()
     return product_metadata_analysis_for_refine_or_tuning_search_result()
 
 
@@ -129,6 +142,10 @@ if __name__ == "__main__":
     logger.info("=" * 60)
     
     try:
+        # Start Prometheus Metrics Server on Port 8000
+        logger.info("Starting Prometheus Metrics Server on port 8000")
+        start_http_server(8000)
+
         # Initialize services before starting server
         initialize_services()
         
