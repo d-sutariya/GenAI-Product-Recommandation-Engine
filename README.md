@@ -509,7 +509,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📧 Contact
 
-**Deepak Sutariya**
+**Deep Sutariya**
 - GitHub: [@d-sutariya](https://github.com/d-sutariya)
 - Project Link: [GenAI-Product-Recommandation-Engine](https://github.com/d-sutariya/GenAI-Product-Recommandation-Engine)
 
