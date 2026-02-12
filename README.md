@@ -335,80 +335,171 @@ kubectl apply -f k8s/client/
 
 ## 🧠 Cognitive Flow (How It Works)
 
-### The Agent Workflow
+### High-Level Architecture
 
+```mermaid
+graph TB
+    subgraph USER["👤 User"]
+        UI["User Query<br/>(CLI / stdin)"]
+    end
+
+    subgraph CLIENT["🖥️ Client — Hexagonal Architecture"]
+        MAIN_C["client/main.py"]
+
+        subgraph INFRA["Infrastructure Adapters"]
+            LLM_A["HFLLMAdapter / GeminiLLMAdapter"]
+            MEM_A["FaissMemoryAdapter"]
+            TOOL_A["MCPToolAdapter"]
+        end
+
+        subgraph APP["Application Services"]
+            PERCEPT["PerceptionService"]
+            DECISION["DecisionService"]
+            ORCH["AgentWorkflow<br/>(LangGraph StateGraph)"]
+            RAG_C["ClientHistoryRAGService"]
+        end
+
+        subgraph DOMAIN["Domain Layer — Ports & Models"]
+            LLM_P["LLMProvider Port"]
+            MEM_P["MemoryStore Port"]
+            TOOL_P["ToolExecutor Port"]
+            STATE["AgentState"]
+            MODELS["PerceptionResult / DecisionResult / MemoryRecord"]
+        end
+    end
+
+    subgraph SERVER["⚙️ MCP Server — FastMCP"]
+        MAIN_S["server/main.py<br/>(stdio / SSE)"]
+
+        subgraph MCP_TOOLS["Registered MCP Tools"]
+            T1["search_products"]
+            T2["format_product_metadata"]
+            T3["rerank_products"]
+            T4["get_product_attributes"]
+        end
+
+        subgraph SERVICES["Server Services"]
+            INGEST["IngestionService"]
+            EMBED["EmbeddingService<br/>(Google Gemini)"]
+            MILVUS["MilvusService<br/>(Milvus Lite)"]
+        end
+    end
+
+    subgraph EXTERNAL["☁️ External Services"]
+        GEMINI_API["Google Gemini API"]
+        MILVUS_DB["Milvus Lite DB<br/>(products.db)"]
+        PROM["Prometheus Metrics<br/>(:8000)"]
+    end
+
+    subgraph DATA["📂 Data"]
+        JSON["Product JSON Files<br/>(documents/*.json)"]
+    end
+
+    UI --> MAIN_C
+    MAIN_C --> LLM_A
+    MAIN_C --> MEM_A
+    MAIN_C --> TOOL_A
+    MAIN_C --> ORCH
+
+    LLM_A -.->|implements| LLM_P
+    MEM_A -.->|implements| MEM_P
+    TOOL_A -.->|implements| TOOL_P
+
+    ORCH --> PERCEPT
+    ORCH --> DECISION
+    PERCEPT --> LLM_P
+    DECISION --> LLM_P
+
+    TOOL_A ==>|"MCP Protocol<br/>(stdio / SSE)"| MAIN_S
+
+    MAIN_S --> T1
+    MAIN_S --> T2
+    MAIN_S --> T3
+    MAIN_S --> T4
+
+    T1 --> EMBED
+    T1 --> MILVUS
+    INGEST --> EMBED
+    INGEST --> MILVUS
+
+    EMBED --> GEMINI_API
+    MILVUS --> MILVUS_DB
+    MAIN_S --> PROM
+    JSON --> INGEST
+
+    MAIN_C --> RAG_C
+    RAG_C --> MEM_A
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      User Input                             │
-│         "Find me Nike running shoes under $100"             │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-                     ▼
-         ┌───────────────────────┐
-         │  1. PERCEPTION        │
-         │  (Intent Analysis)    │
-         └───────────┬───────────┘
-                     │
-        ┌────────────▼─────────────┐
-        │ Intent: ProductSearch    │
-        │ Brand: Nike              │
-        │ Category: Running Shoes  │
-        │ Price: < $100            │
-        └────────────┬─────────────┘
-                     │
-                     ▼
-         ┌───────────────────────┐
-         │  2. MEMORY RETRIEVAL  │
-         │  (Context Loading)    │
-         └───────────┬───────────┘
-                     │
-        ┌────────────▼─────────────┐
-        │ Past Preferences         │
-        │ Conversation History     │
-        └────────────┬─────────────┘
-                     │
-                     ▼
-         ┌───────────────────────┐
-         │  3. DECISION/PLANNING │
-         │  (Reasoning)          │
-         └───────────┬───────────┘
-                     │
-        ┌────────────▼─────────────────────┐
-        │ Plan: Search products            │
-        │ Tool: search_product_documents() │
-        │ Query: "Nike running shoes"      │
-        └────────────┬─────────────────────┘
-                     │
-                     ▼
-         ┌───────────────────────┐
-         │  4. TOOL EXECUTION    │
-         │  (MCP Call)           │
-         └───────────┬───────────┘
-                     │
-        ┌────────────▼─────────────────┐
-        │ MCP Server                   │
-        │ • Vector Search (Milvus)     │
-        │ • Semantic Matching          │
-        │ • Product Ranking            │
-        └────────────┬─────────────────┘
-                     │
-                     ▼
-         ┌───────────────────────┐
-         │  5. RESULT REFINEMENT │
-         │  (Optional Re-ranking)│
-         └───────────┬───────────┘
-                     │
-                     ▼
-         ┌───────────────────────┐
-         │  6. FINAL ANSWER      │
-         │  (Natural Language)   │
-         └───────────┬───────────┘
-                     │
-                     ▼
-        ┌────────────────────────────┐
-        │ "Here are 5 Nike running   │
-        │ shoes under $100..."       │
-        └────────────────────────────┘
+
+### Agent Workflow — LangGraph State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Perception
+
+    Perception --> Memory: Extract intent & entities via LLM
+    Memory --> Decision: Retrieve relevant memories (FAISS)
+
+    Decision --> MCP_Tool_Execution: decision_type = "tool_call"
+    Decision --> Add_To_Cart: decision_type = "final_answer" + recommended_product
+    Decision --> End: decision_type = "final_answer" (no product)
+
+    MCP_Tool_Execution --> Memory_Update: Store tool output in memory
+
+    Memory_Update --> Decision: step < max_steps (loop)
+    Memory_Update --> End: final_answer found
+    Memory_Update --> Error_Handler: error occurred
+
+    Add_To_Cart --> End
+    Error_Handler --> End
+
+    End --> [*]
+```
+
+### Data Ingestion Pipeline
+
+```mermaid
+flowchart LR
+    A["📂 Product JSON Files"] --> B["IngestionService"]
+    B --> C{"File changed?<br/>(MD5 cache check)"}
+    C -->|Yes| D["Parse JSON → ProductChunkTyped"]
+    C -->|No| E["Skip"]
+    D --> F["EmbeddingService<br/>(Gemini API)"]
+    F --> G["Generate Vector Embedding"]
+    G --> H["MilvusService.insert_data()"]
+    H --> I["🗄️ Milvus Lite DB"]
+    B --> J["Update ingestion_cache.json"]
+```
+
+### Runtime Search / RAG Sequence
+
+```mermaid
+sequenceDiagram
+    participant U as 👤 User
+    participant C as Client Agent
+    participant LLM as LLM (HuggingFace/Gemini)
+    participant MCP as MCP Server
+    participant EMB as Embedding Service
+    participant DB as Milvus DB
+
+    U->>C: "Show me high performance laptops"
+    C->>LLM: Perception — extract intent & entities
+    LLM-->>C: {intent: product_search, entities: [laptop, high performance]}
+    C->>C: Retrieve FAISS memories
+    C->>LLM: Decision — what to do next?
+    LLM-->>C: {tool_call: search_products, args: {query: "high performance laptop"}}
+    C->>MCP: search_products("high performance laptop", top_k=5)
+    MCP->>EMB: get_embedding("high performance laptop")
+    EMB->>EMB: Gemini API → 768-dim vector
+    EMB-->>MCP: embedding vector
+    MCP->>DB: vector similarity search
+    DB-->>MCP: Top 5 product results
+    MCP-->>C: ProductResponse list
+    C->>C: Store tool output in memory
+    C->>LLM: Decision — enough info?
+    LLM-->>C: {final_answer: "Here are the top laptops...", recommended_product: "Dell XPS 15"}
+    C->>U: Display results + "Add to cart?" prompt
+    C->>C: Save interaction to Client History RAG (FAISS)
 ```
 
 ### Detailed Flow
